@@ -1,7 +1,7 @@
-# Limpando a memória
+# Limpando a memÃ³ria
 rm(list=ls())
 
-# Instalando bibliotecas necessárias
+# Instalando bibliotecas necessÃ¡rias
 list.of.packages = c('dplyr', 'rvest','funModeling','lubridate','rstatix','PMCMR',
                       'mice','VIM','stringr','readr','magrittr','summarytools')
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -12,17 +12,17 @@ lapply(list.of.packages, library, character.only = TRUE)
 
 # Salvando link para Scraping
 
-# O primeiro passo é gerar um link de pesquisa de alugueis, por exemplo, o link na
-# OLX de imóveis em SP, na Zona Oeste para os bairros: Butantã, Jaguaré e Pinheiros é:
+# O primeiro passo Ã© gerar um link de pesquisa de alugueis, por exemplo, o link na
+# OLX de imÃ³veis em SP, na Zona Oeste para os bairros: ButantÃ£, JaguarÃ© e Pinheiros Ã©:
 # https://sp.olx.com.br/sao-paulo-e-regiao/zona-oeste/imoveis/aluguel?o=1&pe=4000&sd=2922&sd=2932&sd=2915
-# O termo "?o=" é o divisor de página, então, para realizar o scraping, o url_base 
-# fica com o link até o divisor, e complement o restante do link. Não se esqueça 
-# de remover o número referente à pagina. Por exemplo:
+# O termo "?o=" Ã© o divisor de pÃ¡gina, entÃ£o, para realizar o scraping, o url_base 
+# fica com o link atÃ© o divisor, e complement o restante do link. NÃ£o se esqueÃ§a 
+# de remover o nÃºmero referente Ã  pagina. Por exemplo:
 url_base = 'https://sp.olx.com.br/sao-paulo-e-regiao/zona-oeste/imoveis/aluguel?o='
 complement = '&pe=4000&sd=2922&sd=2932&sd=2915'
 url_num = read_html(paste0(url_base,1,complement))
 
-# Contando o número de páginas
+# Contando o nÃºmero de pÃ¡ginas
 num_pag = url_num %>%
   html_nodes(".fhJlIo") %>%
   html_text()
@@ -33,7 +33,7 @@ rf = round((np - floor(np))*50-2+12, digits = 0)
 # Scraping
 result = data.frame()
 for (j in 1:(num_pag)){
-  print(paste("Página: ", j))
+  print(paste("PÃ¡gina: ", j))
   
   olx = paste0(url_base, j, complement)
   olx = read_html(olx)
@@ -59,15 +59,15 @@ for (j in 1:(num_pag)){
     
     if (quartos=='') {
       quartos = '1'
-      categoria = 'Não identificado'
+      categoria = 'NÃ£o identificado'
       condominio = 'R$ 0'
       IPTU = 'R$ 0'
-      m2 = '0m²'
+      m2 = '0mÂ²'
       banheiros = '1'
       vagas = '0'
       Infos = cas %>% html_nodes('dd') %>% html_text()
-      bairro = ifelse(Infos[length(Infos)-1]=='São Paulo',Infos[length(Infos)],Infos[length(Infos)-1])
-      datap = ifelse(as.vector(cas %>% html_nodes('span') %>% html_text())[11]=='Localização',
+      bairro = ifelse(Infos[length(Infos)-1]=='SÃ£o Paulo',Infos[length(Infos)],Infos[length(Infos)-1])
+      datap = ifelse(as.vector(cas %>% html_nodes('span') %>% html_text())[11]=='LocalizaÃ§Ã£o',
                      as.vector(cas %>% html_nodes('span') %>% html_text())[12], 
                      ifelse(as.vector(cas %>% html_nodes('span') %>% html_text())[11]=='-',
                             as.vector(cas %>% html_nodes('span') %>% html_text())[10],
@@ -88,11 +88,11 @@ for (j in 1:(num_pag)){
       ref1 = substr(Infos[1], nchar(Infos[1])-2+1, nchar(Infos[1]))
       ref2 = substr(Infos[2], nchar(Infos[2])-2+1, nchar(Infos[2]))
       
-      if (ref1=='m²') {
+      if (ref1=='mÂ²') {
         condominio = 'R$ 0'
         IPTU = 'R$ 0'
         l = 2
-      } else if (ref2=='m²'){
+      } else if (ref2=='mÂ²'){
         condominio = Infos[1]
         IPTU = 'R$ 0'
         l = 1
@@ -105,9 +105,10 @@ for (j in 1:(num_pag)){
       m2 = Infos[3-l]
       banheiros = Infos[4-l]
       vagas = ifelse(nchar(Infos[5-l])==8,'0',Infos[5-l])
-      bairro = ifelse(Infos[length(Infos)-1]=='São Paulo',Infos[length(Infos)],Infos[length(Infos)-1])
+      vagas = ifelse(is.na(as.numeric(vagas)),'0',vagas)
+      bairro = ifelse(Infos[length(Infos)-1]=='SÃ£o Paulo',Infos[length(Infos)],Infos[length(Infos)-1])
       link = divs[[k]]
-      datap = ifelse(as.vector(cas %>% html_nodes('span') %>% html_text())[11]=='Localização',
+      datap = ifelse(as.vector(cas %>% html_nodes('span') %>% html_text())[11]=='LocalizaÃ§Ã£o',
                      as.vector(cas %>% html_nodes('span') %>% html_text())[12], 
                      ifelse(as.vector(cas %>% html_nodes('span') %>% html_text())[11]=='-',
                             as.vector(cas %>% html_nodes('span') %>% html_text())[10],
@@ -115,6 +116,6 @@ for (j in 1:(num_pag)){
     }
     
     result = rbind(result, data.frame(titulo,datap,categoria,bairro,preco,condominio,IPTU,m2,quartos,banheiros,vagas,link))
-    print(paste('Anúncio',(k-11)))
+    print(paste('AnÃºncio',(k-11)))
   }
 }
