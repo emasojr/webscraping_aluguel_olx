@@ -2,7 +2,7 @@
 rm(list=ls())
 
 # Nome da Cidade que Está pesquisando
-cidade = 'São Paulo'
+cidade = 'Feira de Santana'
 
 # Instalando bibliotecas necessárias
 list.of.packages = c('dplyr', 'rvest','funModeling','lubridate','rstatix','PMCMR',
@@ -21,8 +21,8 @@ lapply(list.of.packages, library, character.only = TRUE)
 # O termo "?o=" é o divisor de página, então, para realizar o scraping, o url_base 
 # fica com o link até o divisor, e complement o restante do link. Não se esqueça 
 # de remover o número referente à pagina. Por exemplo:
-url_base = 'https://sp.olx.com.br/sao-paulo-e-regiao/zona-oeste/imoveis/aluguel?o='
-complement = '&pe=4000&sd=2922&sd=2932&sd=2915'
+url_base = 'https://ba.olx.com.br/regiao-de-feira-de-santana-e-alagoinhas/imoveis/aluguel?o='
+complement = ''
 url_num = read_html(paste0(url_base,1,complement))
 
 # Contando o número de páginas
@@ -131,9 +131,10 @@ for (j in 1:(num_pag)){
         }
         
         m2 = ifelse(r==1,'0m²',Infos[3-l-r])
-        banheiros = Infos[4-l-r]
-        vagas = ifelse(nchar(Infos[5-l-r])==8,'0',Infos[5-l-r])
-        vagas = ifelse(is.na(as.numeric(vagas)),'0',vagas)
+        banheiros = ifelse(is.na(as.numeric(substr(Infos[4-l-r],1,1))),NA,
+                           ifelse(nchar(Infos[4-l-r])==8,NA,Infos[4-l-r]))
+        vagas = ifelse(nchar(Infos[5-l-r])==8,NA,Infos[5-l-r])
+        vagas = ifelse(is.na(as.numeric(vagas)),NA,vagas)
         bairro = ifelse(Infos[length(Infos)-1]==cidade,Infos[length(Infos)],Infos[length(Infos)-1])
         link = divs[[k]]
         datap = ifelse(as.vector(cas %>% html_nodes('span') %>% html_text())[11]=='Localização',
