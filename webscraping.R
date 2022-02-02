@@ -1,6 +1,9 @@
 # Limpando a memória
 rm(list=ls())
 
+# Nome da Cidade que Está pesquisando
+cidade = 'São Paulo'
+
 # Instalando bibliotecas necessárias
 list.of.packages = c('dplyr', 'rvest','funModeling','lubridate','rstatix','PMCMR',
                       'mice','VIM','stringr','readr','magrittr','summarytools')
@@ -18,16 +21,20 @@ lapply(list.of.packages, library, character.only = TRUE)
 # O termo "?o=" é o divisor de página, então, para realizar o scraping, o url_base 
 # fica com o link até o divisor, e complement o restante do link. Não se esqueça 
 # de remover o número referente à pagina. Por exemplo:
-url_base = 'https://sp.olx.com.br/sao-paulo-e-regiao/zona-oeste/imoveis/aluguel?o='
-complement = '&pe=4000&sd=2922&sd=2932&sd=2915'
+url_base = 'https://sp.olx.com.br/sao-paulo-e-regiao/zona-oeste/imoveis/aluguel/2-quartos?gsp=1&o='
+complement = '&pe=2000&sd=2922&sd=2932&sd=2934&sd=2913&sd=2933&sd=2808&sd=2925&sd=2917&sd=2918&sd=2912&sd=2924&sd=2930&sd=2921&sd=2919&sd=2915&sd=2910&sd=2931&sd=2920&sd=2928&sd=2927&sd=2909&sd=2929'
 url_num = read_html(paste0(url_base,1,complement))
 
 # Contando o número de páginas
 num_pag = url_num %>%
-  html_nodes(".fhJlIo") %>%
+  html_nodes('span') %>%
   html_text()
-np = as.numeric(paste0(substr(num_pag,11,11),substr(num_pag,13,15)))/50
-num_pag = ceiling((as.numeric(paste0(substr(num_pag,11,11),substr(num_pag,13,15)))/50))
+num_pag = num_pag[substr(num_pag,1,6)=='1 - 50']
+
+num_pag = ifelse(substr(num_pag,12,12)=='.',as.numeric(paste0(substr(num_pag,11,11),substr(num_pag,13,15))),
+                 as.numeric(substr(num_pag,11,13)))
+np = num_pag/50
+num_pag = ceiling(np)
 rf = round((np - floor(np))*50-2+12, digits = 0)
 
 # Scraping
@@ -66,7 +73,7 @@ for (j in 1:(num_pag)){
       banheiros = '1'
       vagas = '0'
       Infos = cas %>% html_nodes('dd') %>% html_text()
-      bairro = ifelse(Infos[length(Infos)-1]=='São Paulo',Infos[length(Infos)],Infos[length(Infos)-1])
+      bairro = ifelse(Infos[length(Infos)-1]==cidade,Infos[length(Infos)],Infos[length(Infos)-1])
       datap = ifelse(as.vector(cas %>% html_nodes('span') %>% html_text())[11]=='Localização',
                      as.vector(cas %>% html_nodes('span') %>% html_text())[12], 
                      ifelse(as.vector(cas %>% html_nodes('span') %>% html_text())[11]=='-',
@@ -106,7 +113,7 @@ for (j in 1:(num_pag)){
       banheiros = Infos[4-l]
       vagas = ifelse(nchar(Infos[5-l])==8,'0',Infos[5-l])
       vagas = ifelse(is.na(as.numeric(vagas)),'0',vagas)
-      bairro = ifelse(Infos[length(Infos)-1]=='São Paulo',Infos[length(Infos)],Infos[length(Infos)-1])
+      bairro = ifelse(Infos[length(Infos)-1]==cidade,Infos[length(Infos)],Infos[length(Infos)-1])
       link = divs[[k]]
       datap = ifelse(as.vector(cas %>% html_nodes('span') %>% html_text())[11]=='Localização',
                      as.vector(cas %>% html_nodes('span') %>% html_text())[12], 
